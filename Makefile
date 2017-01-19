@@ -1,13 +1,15 @@
-.PHONY: cluster-secure cluster-unsecure working clean
+.PHONY:  working clean \
+	standalone-unsecure stop-standalone-unsecure \
+	generate_certs
 
 nifi_version = 1.1.1
 nifi_toolkit = dependencies/nifi-toolkit-$(nifi_version)-bin.tar.gz
 
 standalone-unsecure:
-	docker-compose -f standalone/docker-compose.yml up
+	docker-compose -f standalone/unsecure/docker-compose.yml up
 
 stop-standalone-unsecure:
-	docker-compose -f standalone/docker-compose.yml down
+	docker-compose -f standalone/unsecure/docker-compose.yml down
 
 # Establish working directory format and dependencies
 working:
