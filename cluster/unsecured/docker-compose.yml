@@ -10,9 +10,33 @@ services:
       ZOO_MY_ID: 1
       ZOO_SERVERS: server.1=zookeeper:2888:3888
 
+  # bootstrap:
+  #   image: ubuntu
+  #   depends_on:
+  #     - nifi-ca
+  #
+  nifi-ca:
+    image:  aldrin/nifi-tls-toolkit:1.1.1
+    ports:
+      - "18443:8443"
+    command: "server -t ${tls_token} -D CN=nifi-ca,OU=Docker NiFi"
+
   nifi-node:
     build: ./
     ports:
       - "8080-8082"
+      - "8443:8443"
+    environment:
+      tls_token: ${tls_token}
+    links:
+      - nifi-ca:nifi-ca
     depends_on:
       - zookeeper
+    #   - bootstrap
+
+  # monitor:
+  #   image: portainer/portainer
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   ports:
+  #     - 9000:9000
