@@ -40,6 +40,10 @@ RUN curl -fSL $NIFI_BINARY_URL -o $NIFI_BASE_DIR/nifi-$NIFI_VERSION-bin.tar.gz \
   && apt-get install jq
 
 RUN apt-get install -y vim xmlstarlet
+
+RUN wget https://github.com/outbrain/zookeepercli/releases/download/v1.0.10/zookeepercli_1.0.10_amd64.deb \
+	&& dpkg -i zookeepercli_1.0.10_amd64.deb
+	
 # Web HTTP Port
 EXPOSE 8080 8443
 

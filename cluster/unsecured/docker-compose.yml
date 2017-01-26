@@ -10,11 +10,6 @@ services:
       ZOO_MY_ID: 1
       ZOO_SERVERS: server.1=zookeeper:2888:3888
 
-  # bootstrap:
-  #   image: ubuntu
-  #   depends_on:
-  #     - nifi-ca
-  #
   nifi-ca:
     image:  aldrin/nifi-tls-toolkit:1.1.1
     ports:
@@ -25,7 +20,7 @@ services:
     build: ./
     ports:
       - "8080-8082"
-      - "8443:8443"
+      - "8443"
     environment:
       tls_token: ${tls_token}
     links:
@@ -34,6 +29,11 @@ services:
       - zookeeper
     #   - bootstrap
 
+  # browser:
+  #   image: jess/firefox
+  #   environment:
+  #     ip
+  #     DISPLAY=
   # monitor:
   #   image: portainer/portainer
   #   volumes:
