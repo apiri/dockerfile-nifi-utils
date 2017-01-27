@@ -88,4 +88,10 @@ fi
 
 # Continuously provide logs so that 'docker logs' can produce them
 tail -F ${NIFI_HOME}/logs/nifi-app.log &
-${NIFI_HOME}/bin/nifi.sh run
+${NIFI_HOME}/bin/nifi.sh run &
+PID="$!"
+
+trap "for i in {1..1000}; do echo Received SIGTERM, beginning shutdown...; done" SIGKILL SIGTERM SIGHUP SIGINT EXIT;
+
+echo NiFi running with PID ${PID}.
+wait $PID

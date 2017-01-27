@@ -35,8 +35,3 @@ services:
       - ${HOME}/.portainer/data:/data
     ports:
       - 9000:9000
-  # browser:
-  #   image: jess/firefox
-  #   environment:
-  #     ip
-  #     DISPLAY=
