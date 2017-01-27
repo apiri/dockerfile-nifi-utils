@@ -22,3 +22,13 @@ security list-keychains -d user -s ~/Library/Keychains/login.keychain ${keychain
 security unlock -p password ${keychain}
 sudo security add-trusted-cert -d -k ${keychain} ${cert_path}/nifi-cert.pem
 security import ${cert_path}/keystore.pkcs12 -f pkcs12 -k ${keychain} -P $(cat ${cert_path}/config.json | jq -r .keyStorePassword)
+
+# Determine where NiFi is accessible
+forwarded_port=$(docker port unsecured_nifi-node_1 | grep 8443 | cut -d':' -f 2)
+docker_nifi_url="https://localhost:${forwarded_port}/nifi"
+echo "NiFi Node 1 is available at: ${docker_nifi_url}"
+
+# Have to close and start browser as per:  https://bugs.chromium.org/p/chromium/issues/detail?id=315084
+# Restart Safari and open to node 1's forwarded address on localhost
+osascript -e 'quit app "Safari"'
+open -a "Safari" ${docker_nifi_url}
