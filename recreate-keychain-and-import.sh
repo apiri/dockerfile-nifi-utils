@@ -32,3 +32,4 @@ echo "NiFi Node 1 is available at: ${docker_nifi_url}"
 # Restart Safari and open to node 1's forwarded address on localhost
 osascript -e 'quit app "Safari"'
 open -a "Safari" ${docker_nifi_url}
+open -a "Safari" http://localhost:9000/
