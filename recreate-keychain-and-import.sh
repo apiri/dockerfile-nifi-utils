@@ -1,16 +1,41 @@
-#!/bin/sh
+#!/bin/sh -e
 
 tls_toolkit_path=~/Downloads/nifi-toolkit-1.1.1
-cert_path=/tmp/nifi/certs
+cert_path_base=/tmp/nifi/certs
 keychain=~/Library/Keychains/Development.keychain
 
-mkdir -p ${cert_path}
-/bin/rm -f ${cert_path}/* \
-  && (cd ${cert_path} && ${tls_toolkit_path}/bin/tls-toolkit.sh client \
-    -t tokenenenenalkjlkdfjlkjdflkasjflksjaflsajdflksajfklsajfklsajfklajsf \
-    -T PKCS12 \
-    -c nifi-ca \
-    -p 18443 && cat config.json | jq -r .keyStorePassword)
+mkdir -p ${cert_path_base}
+
+
+generate_for_dn() {
+  dn=$1
+
+  dn_arg=''
+
+  if [ ! -z "${dn}" ]; then
+    dn_arg="--dn ${dn}"
+  else
+    dn='default'
+  fi
+
+  dn_cert_path=${cert_path_base}/${dn}
+
+  mkdir -p ${dn_cert_path}
+
+  (cd ${dn_cert_path} && ${tls_toolkit_path}/bin/tls-toolkit.sh client \
+      -t tokenenenenalkjlkdfjlkjdflkasjflksjaflsajdflksajfklsajfklsajfklajsf \
+      -T PKCS12 \
+      -c nifi-ca \
+      -p 18443 ${dn_arg} && cat config.json | jq -r .keyStorePassword)
+}
+
+/bin/rm -rf ${cert_path_base}/*
+
+# Create the default user who is our admin
+generate_for_dn
+
+# Create a random user
+generate_for_dn 'CN=GuyRandomUser,OU=NIFI'
 
 # Recreate keychains because OS X has a bug that doesn't let you delete private keys :(
 security delete-keychain ${keychain}
@@ -20,8 +45,11 @@ security create-keychain -p password ${keychain}
 security list-keychains -d user -s ~/Library/Keychains/login.keychain ${keychain}
 
 security unlock -p password ${keychain}
-sudo security add-trusted-cert -d -k ${keychain} ${cert_path}/nifi-cert.pem
-security import ${cert_path}/keystore.pkcs12 -f pkcs12 -k ${keychain} -P $(cat ${cert_path}/config.json | jq -r .keyStorePassword)
+
+for dn_folder in $(find ${cert_path_base} -type d -mindepth 1 -maxdepth 1); do
+  sudo security add-trusted-cert -d -k ${keychain} ${dn_folder}/nifi-cert.pem
+  security import ${dn_folder}/keystore.pkcs12 -f pkcs12 -k ${keychain} -P $(cat ${dn_folder}/config.json | jq -r .keyStorePassword)
+done
 
 # Determine where NiFi is accessible
 forwarded_port=$(docker port unsecured_nifi-node_1 | grep 8443 | cut -d':' -f 2)
