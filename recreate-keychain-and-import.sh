@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-tls_toolkit_path=~/Downloads/nifi-toolkit-1.1.1
+tls_toolkit_path=/Users/apiri/bin/nifi-toolkit-1.1.1
 cert_path_base=/tmp/nifi/certs
 keychain=~/Library/Keychains/Development.keychain
 
