@@ -60,6 +60,11 @@ echo "NiFi Node 1 is available at: ${docker_nifi_url}"
 
 # Have to close and start browser as per:  https://bugs.chromium.org/p/chromium/issues/detail?id=315084
 # Restart Safari and open to node 1's forwarded address on localhost
-osascript -e 'quit app "Safari"'
+if [ "Running" == $(osascript -e 'if application "Safari" is running then return "Running"') ]; then
+    echo 'Safari was running... exiting'
+    osascript -e 'quit app "Safari"'
+    sleep 2
+fi
+
 open -a "Safari" ${docker_nifi_url}
 open -a "Safari" http://localhost:9000/
