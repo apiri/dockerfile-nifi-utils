@@ -1,11 +1,10 @@
 #!/bin/sh -e
 
-tls_toolkit_path=/Users/apiri/bin/nifi-toolkit-1.1.1
-cert_path_base=/tmp/nifi/certs
+cert_path_base=/tmp/nifi-docker-certs
 keychain=~/Library/Keychains/Development.keychain
+tls_toolkit_image=aldrin/apache-nifi-tls-toolkit
 
 mkdir -p ${cert_path_base}
-
 
 generate_for_dn() {
   dn=$1
@@ -22,17 +21,20 @@ generate_for_dn() {
 
   mkdir -p ${dn_cert_path}
 
-  (cd ${dn_cert_path} && ${tls_toolkit_path}/bin/tls-toolkit.sh client \
+  (cd ${dn_cert_path} && docker run -it --rm \
+      --network $(docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}} {{$k}} {{end}}' $(docker ps -q --filter="ancestor=${tls_toolkit_image}")) \
+      -v ${dn_cert_path}:/generated \
+      ${tls_toolkit_image} client \
       -t tokenenenenalkjlkdfjlkjdflkasjflksjaflsajdflksajfklsajfklsajfklajsf \
       -T PKCS12 \
       -c nifi-ca \
-      -p 18443 ${dn_arg} && cat config.json | jq -r .keyStorePassword)
+      -p 8443 ${dn_arg} && cat config.json | jq -r .keyStorePassword)
 }
 
 /bin/rm -rf ${cert_path_base}/*
 
 # Create the default user who is our admin
-generate_for_dn
+generate_for_dn 'CN=InitialAdmin,OU=NIFI'
 
 # Create a random user
 generate_for_dn 'CN=GuyRandomUser,OU=NIFI'

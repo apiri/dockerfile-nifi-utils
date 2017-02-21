@@ -11,7 +11,8 @@ services:
       ZOO_SERVERS: server.1=zookeeper:2888:3888
 
   nifi-ca:
-    image:  aldrin/apache-nifi-tls-toolkit:1.1.1
+    image:  aldrin/apache-nifi-tls-toolkit
+    hostname: nifi-ca
     ports:
       - "18443:8443"
     command: "server -t ${tls_token} -D CN=nifi-ca,OU=Docker NiFi"

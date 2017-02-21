@@ -36,13 +36,10 @@ if [ -n "${tls_token}" ]; then
 
   # check if there is already a cluster running, if not, treat this as initial node
   if ! zookeepercli --servers zookeeper -c ls /nifi/leaders ; then
-    echo "!!! UPDATING AUTHORIZER INFORMATION !!!!"
-    sed -i -e 's|<property name="Initial Admin Identity"></property>|<property name="Initial Admin Identity">CN=HW12151.local, OU=NIFI</property>|'  ${NIFI_HOME}/conf/authorizers.xml
+    sed -i -e 's|<property name="Initial Admin Identity"></property>|<property name="Initial Admin Identity">CN=InitialAdmin, OU=NIFI</property>|'  ${NIFI_HOME}/conf/authorizers.xml
     sed -i -e 's|<property name="Node Identity 1"></property>|<property name="Node Identity 1">CN='${hostname}', OU=NIFI</property>|'  ${NIFI_HOME}/conf/authorizers.xml
     # Move the comment line for our Node Identities down 1
     sed -i -n '59{h;n;G};p' /opt/nifi/nifi-1.1.1/conf/authorizers.xml
-  else
-    echo "!!! JOINING AN EXISTING NODE, NOT DOING ANY AUTHORIZER WORK !!!"
   fi
 
   echo "My conf directory looks like the following: "
