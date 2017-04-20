@@ -20,8 +20,10 @@ services:
   nifi-node:
     build: ./
     ports:
-      - "8080-8082"
-      - "8443"
+      - 8080
+      - 8081
+      - 8082
+      - 8443
     environment:
       tls_token: ${tls_token}
     links:
