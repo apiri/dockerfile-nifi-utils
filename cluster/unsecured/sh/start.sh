@@ -41,7 +41,7 @@ if [ -n "${tls_token}" ]; then
   cd /opt/nifi/certs && /opt/nifi/nifi-toolkit-1.3.0/bin/tls-toolkit.sh client -t ${tls_token} -c nifi-ca
 
   # check if there is already a cluster running, if not, treat this as initial node
-  if ! zookeepercli --servers zookeeper -c ls /nifi/leaders ; then
+  if ! zookeepercli --servers ${zookeeper_connect_string} -c ls /nifi/leaders ; then
     sed -i -e 's|<property name="Initial Admin Identity"></property>|<property name="Initial Admin Identity">CN=InitialAdmin, OU=NIFI</property>|'  ${NIFI_HOME}/conf/authorizers.xml
     sed -i -e 's|<property name="Node Identity 1"></property>|<property name="Node Identity 1">CN='${hostname}', OU=NIFI</property>|'  ${NIFI_HOME}/conf/authorizers.xml
     # Move the comment line for our Node Identities down 1
