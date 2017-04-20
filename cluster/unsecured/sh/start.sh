@@ -10,13 +10,12 @@ prop_replace () {
 nifi_props_file=${NIFI_HOME}/conf/nifi.properties
 
 # setup zookeeper
-
 zk_string='zookeeper:2181'
 if [ -n "${zookeeper_connect_string}" ]; then
   zk_string=${zookeeper_connect_string}
 fi
 
-prop_replace 'nifi.zookeeper_connect_string' "${zookeeper_connect_string}"
+prop_replace 'nifi.zookeeper.connect.string' "${zk_string}"
 prop_replace 'nifi.zookeeper.connect.timeout' '3 secs'
 prop_replace 'nifi.zookeeper.session.timeout' '3 secs'
 prop_replace 'nifi.zookeeper.root.node' '/nifi'
