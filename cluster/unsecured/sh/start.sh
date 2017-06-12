@@ -32,14 +32,14 @@ if [ -n "${tls_token}" ]; then
 
   echo "Requesting certificate with CSR."
   mkdir -p /opt/nifi/certs
-  cd /opt/nifi/certs && /opt/nifi/nifi-toolkit-1.1.1/bin/tls-toolkit.sh client -t ${tls_token} -c nifi-ca
+  cd /opt/nifi/certs && /opt/nifi/nifi-toolkit-1.3.0/bin/tls-toolkit.sh client -t ${tls_token} -c nifi-ca
 
   # check if there is already a cluster running, if not, treat this as initial node
   if ! zookeepercli --servers zookeeper -c ls /nifi/leaders ; then
     sed -i -e 's|<property name="Initial Admin Identity"></property>|<property name="Initial Admin Identity">CN=InitialAdmin, OU=NIFI</property>|'  ${NIFI_HOME}/conf/authorizers.xml
     sed -i -e 's|<property name="Node Identity 1"></property>|<property name="Node Identity 1">CN='${hostname}', OU=NIFI</property>|'  ${NIFI_HOME}/conf/authorizers.xml
     # Move the comment line for our Node Identities down 1
-    sed -i -n '59{h;n;G};p' /opt/nifi/nifi-1.1.1/conf/authorizers.xml
+    sed -i -n '59{h;n;G};p' /opt/nifi/nifi-1.3.0/conf/authorizers.xml
   fi
 
   echo "My conf directory looks like the following: "
@@ -80,7 +80,7 @@ else
 fi
 
 
-#echo 'java.arg.15=-Djsse.enableSNIExtension=false' >> /opt/nifi/nifi-1.1.1/conf/bootstrap.conf
+#echo 'java.arg.15=-Djsse.enableSNIExtension=false' >> /opt/nifi/nifi-1.3.0/conf/bootstrap.conf
 
 
 # Continuously provide logs so that 'docker logs' can produce them
