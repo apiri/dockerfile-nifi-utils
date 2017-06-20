@@ -1,14 +1,14 @@
 
 version: '2'
 services:
-  zookeeper:
+  nifizk:
     image: zookeeper
     restart: always
     ports:
       - 2181
     environment:
       ZOO_MY_ID: 1
-      ZOO_SERVERS: server.1=zookeeper:2888:3888
+      ZOO_SERVERS: server.1=nifizk:2888:3888
 
   nifi-ca:
     image:  aldrin/apache-nifi-tls-toolkit
@@ -26,10 +26,11 @@ services:
       - 8443
     environment:
       tls_token: ${tls_token}
+      zookeeper_connect_string: nifizk
     links:
       - nifi-ca:nifi-ca
     depends_on:
-      - zookeeper
+      - nifizk
 
   monitor:
     image: portainer/portainer
