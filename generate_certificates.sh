@@ -1,7 +1,10 @@
 #!/bin/sh -e
 
-cert_path_base=/tmp/nifi-docker-certs
+tmp_dir=$(mktemp -d /tmp/nifi-docker-certs-$(date +%s).XXX)
+export cert_path_base=${tmp_dir}/cert-tmp/nifi-docker-certs
 tls_toolkit_image=aldrin/apache-nifi-tls-toolkit
+uid=$(id -u)
+gid=$(id -g)
 
 mkdir -p ${cert_path_base}
 
@@ -20,14 +23,14 @@ generate_for_dn() {
 
   mkdir -p ${dn_cert_path}
 
-  (cd ${dn_cert_path} && docker run -it --rm \
+  (cd ${dn_cert_path} && docker run --rm \
       --network $(docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}} {{$k}} {{end}}' $(docker ps -q --filter="ancestor=${tls_toolkit_image}")) \
       -v ${dn_cert_path}:/generated \
       ${tls_toolkit_image} client \
       -t tokenenenenalkjlkdfjlkjdflkasjflksjaflsajdflksajfklsajfklsajfklajsf \
       -T PKCS12 \
       -c nifi-ca \
-      -p 8443 ${dn_arg} && cat config.json | jq -r .keyStorePassword)
+      -p 8443 ${dn_arg})
 }
 
 /bin/rm -rf ${cert_path_base}/*
@@ -38,7 +41,8 @@ generate_for_dn 'CN=InitialAdmin,OU=NIFI'
 # Create a random user
 generate_for_dn 'CN=GuyRandomUser,OU=NIFI'
 
-# Determine where NiFi is accessible
-forwarded_port=$(docker port unsecured_nifi-node_1 | grep 8443 | cut -d':' -f 2)
-docker_nifi_url="https://localhost:${forwarded_port}/nifi"
-echo "NiFi Node 1 is available at: ${docker_nifi_url}"
+# Update permissions to work around docker being root
+certs_volume='/generated'
+docker run --rm -v ${cert_path_base}:${certs_volume} alpine chown -R ${uid}:${gid} ${certs_volume}
+
+echo "Certificates are available in directory ${cert_path_base}"
