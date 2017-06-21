@@ -29,7 +29,7 @@ if [ "${docker_host}" == 'localhost' ]; then
     forwarded_port=$(docker port unsecured_nifi-node_1 | grep 8443 | cut -d':' -f 2)
 else
   cat generate_certificates.sh | ssh -t ${docker_host}
-  remote_cert_directory=$(ssh ${docker_host} find /tmp -maxdepth 1 -type d -name '*-docker-nifi-certs' | sort -r | head -n 1 )
+  remote_cert_directory=$(ssh ${docker_host} find /tmp -maxdepth 1 -type d -name '*nifi-docker-certs*' | sort -r | head -n 1 )
   echo "Generated certificates are available at ${remote_cert_directory}"
   rsync -r $docker_host:${remote_cert_directory}/ ${cert_path_base}/
   echo "Rsync completed to ${cert_path_base}"
