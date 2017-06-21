@@ -1,5 +1,23 @@
 #!/bin/sh -e
 
+usage() { echo "Usage: $0 [-h <host running cluster>]" 1>&2; exit 1; }
+
+while getopts ":h:" option; do
+    case "${option}" in
+        h)
+            docker_host=${OPTARG}
+            echo "Using specified host ${docker_host}"
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+if [ -z "${docker_host}" ]; then
+    echo 'No host specified.  Assuming local Docker compose environment'
+fi
+
 cert_path_base=/tmp/nifi-docker-certs
 keychain=~/Library/Keychains/Development.keychain
 tls_toolkit_image=aldrin/apache-nifi-tls-toolkit
@@ -39,32 +57,38 @@ generate_for_dn 'CN=InitialAdmin,OU=NIFI'
 # Create a random user
 generate_for_dn 'CN=GuyRandomUser,OU=NIFI'
 
-# Recreate keychains because OS X has a bug that doesn't let you delete private keys :(
-security delete-keychain ${keychain}
-security create-keychain -p password ${keychain}
-
-# Add the new keychain into the list of default keychains searched, because create-keychain is supposed to do this, but doesn't :((
-security list-keychains -d user -s ~/Library/Keychains/login.keychain ${keychain}
-
-security unlock -p password ${keychain}
-
-for dn_folder in $(find ${cert_path_base} -type d -mindepth 1 -maxdepth 1); do
-  sudo security add-trusted-cert -d -k ${keychain} ${dn_folder}/nifi-cert.pem
-  security import ${dn_folder}/keystore.pkcs12 -f pkcs12 -k ${keychain} -P $(cat ${dn_folder}/config.json | jq -r .keyStorePassword)
-done
 
 # Determine where NiFi is accessible
 forwarded_port=$(docker port unsecured_nifi-node_1 | grep 8443 | cut -d':' -f 2)
 docker_nifi_url="https://localhost:${forwarded_port}/nifi"
 echo "NiFi Node 1 is available at: ${docker_nifi_url}"
 
-# Have to close and start browser as per:  https://bugs.chromium.org/p/chromium/issues/detail?id=315084
-# Restart Safari and open to node 1's forwarded address on localhost
-if [ "Running" = "$(osascript -e 'if application "Safari" is running then return "Running"')" ]; then
-    echo 'Safari was running... exiting'
-    osascript -e 'quit app "Safari"'
-    sleep 2
-fi
+# Provide automation of handling certificate import and opening browser when in OS X
+if [ "$(uname)" == 'Darwin' ]; then
+  echo 'Detected we are running from OS X, creating keychain and importing certificates.'
 
-open -a "Safari" ${docker_nifi_url}
-open -a "Safari" http://localhost:9000/
+  # Recreate keychains because OS X has a bug that doesn't let you delete private keys :(
+  security delete-keychain ${keychain}
+  security create-keychain -p password ${keychain}
+
+  # Add the new keychain into the list of default keychains searched, because create-keychain is supposed to do this, but doesn't :((
+  security list-keychains -d user -s ~/Library/Keychains/login.keychain ${keychain}
+
+  security unlock -p password ${keychain}
+
+  for dn_folder in $(find ${cert_path_base} -type d -mindepth 1 -maxdepth 1); do
+    sudo security add-trusted-cert -d -k ${keychain} ${dn_folder}/nifi-cert.pem
+    security import ${dn_folder}/keystore.pkcs12 -f pkcs12 -k ${keychain} -P $(cat ${dn_folder}/config.json | jq -r .keyStorePassword)
+  done
+
+  # Have to close and start browser as per:  https://bugs.chromium.org/p/chromium/issues/detail?id=315084
+  # Restart Safari and open to node 1's forwarded address on localhost
+  if [ "Running" = "$(osascript -e 'if application "Safari" is running then return "Running"')" ]; then
+      echo 'Safari was running... exiting'
+      osascript -e 'quit app "Safari"'
+      sleep 2
+  fi
+
+  open -a "Safari" ${docker_nifi_url}
+  open -a "Safari" http://localhost:9000/
+fi
