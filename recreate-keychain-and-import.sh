@@ -46,8 +46,10 @@ if [ "$(uname)" == 'Darwin' ]; then
 
   echo 'Detected we are running from OS X, creating keychain and importing certificates.'
 
-  # Recreate keychains because OS X has a bug that doesn't let you delete private keys :(
-  security delete-keychain ${keychain}
+  # Create/recreate keychain because OS X has a bug that doesn't let you delete private keys :(
+  if [ $(security list-keychains | grep ${keychain}) ]; then
+     security delete-keychain ${keychain}
+  fi
   security create-keychain -p password ${keychain}
 
   # Add the new keychain into the list of default keychains searched, because create-keychain is supposed to do this, but doesn't :((
