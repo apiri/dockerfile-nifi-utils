@@ -30,7 +30,7 @@ RUN useradd --shell /bin/bash -u $UID -g $GID -m nifi
 RUN mkdir -p $NIFI_HOME
 
 ADD    https://archive.apache.org/dist/nifi/${NIFI_VERSION}/nifi-toolkit-${NIFI_VERSION}-bin.tar.gz /opt/nifi/
-RUN    tar -xf /opt/nifi/nifi-toolkit-${NIFI_VERSION}-bin.tar.gz
+RUN    tar -xf /opt/nifi/nifi-toolkit-${NIFI_VERSION}-bin.tar.gz -C ${NIFI_BASE_DIR}
 
 # Download, validate, and expand Apache NiFi binary.
 RUN curl -fSL $NIFI_BINARY_URL -o $NIFI_BASE_DIR/nifi-${NIFI_VERSION}-bin.tar.gz \
