@@ -31,7 +31,7 @@ prop_replace 'nifi.cluster.is.node' 'true'
 prop_replace 'nifi.cluster.node.protocol.port' '8082'
 
 
-hostname=$(hostname -I)
+hostname=$(hostname -I | awk '{print $1}' | tr -d "[:blank:]")
 
 # Setup host based off container properties
 prop_replace 'nifi.cluster.node.address' "${hostname}"
