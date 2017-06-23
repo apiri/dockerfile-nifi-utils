@@ -15,6 +15,11 @@ if [ -n "${zookeeper_connect_string}" ]; then
   zk_string=${zookeeper_connect_string}
 fi
 
+ca_address='nifi-ca'
+if [ -n "${nifi_ca_server_host}" ]; then
+  ca_address=${nifi_ca_server_host}
+fi
+
 prop_replace 'nifi.zookeeper.connect.string' "${zk_string}"
 prop_replace 'nifi.zookeeper.connect.timeout' '3 secs'
 prop_replace 'nifi.zookeeper.session.timeout' '3 secs'
@@ -37,7 +42,7 @@ if [ -n "${tls_token}" ]; then
 
   echo "Requesting certificate with CSR."
   mkdir -p /opt/nifi/certs
-  cd /opt/nifi/certs && /opt/nifi/nifi-toolkit-1.3.0/bin/tls-toolkit.sh client -t ${tls_token} -c nifi-ca
+  cd /opt/nifi/certs && /opt/nifi/nifi-toolkit-1.3.0/bin/tls-toolkit.sh client -t ${tls_token} -c ${ca_address}
 
   # check if there is already a cluster running, if not, treat this as initial node
   if ! zookeepercli --servers ${zk_string} -c ls /nifi/leaders ; then
