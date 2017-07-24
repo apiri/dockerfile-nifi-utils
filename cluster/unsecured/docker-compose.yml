@@ -1,5 +1,5 @@
 
-version: '2'
+version: '3'
 services:
   zookeeper:
     image: zookeeper
@@ -17,24 +17,44 @@ services:
       - "18443:8443"
     command: "server -t ${tls_token} -D CN=nifi-ca,OU=Docker NiFi"
 
-  nifi-node:
-    build: ./
-    ports:
-      - 8080
-      - 8081
-      - 8082
-      - 8443
-    environment:
-      tls_token: ${tls_token}
-    links:
-      - nifi-ca:nifi-ca
-    depends_on:
-      - zookeeper
-
-  monitor:
-    image: portainer/portainer
+  # nifi-node:
+  #   build: ./
+  #   ports:
+  #     - 8080
+  #     - 8081
+  #     - 8082
+  #     - 8443
+  #   environment:
+  #     tls_token: ${tls_token}
+  #   links:
+  #     - nifi-ca:nifi-ca
+  #   depends_on:
+  #     - zookeeper
+  
+  ldap:
+    image: osixia/openldap:1.1.9
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${HOME}/.portainer/data:/data
-    ports:
-      - 9000:9000
+      - /Users/apiri/Development/docker-data/ldap/database:/var/lib/ldap # LDAP database
+      - /Users/apiri/Development/docker-data/ldap/config:/etc/ldap/slapd.d # LDAP config
+      - /Users/apiri/Development/docker-data/ldap/certs:/container/service/slapd/assets/certs # certificates
+    environment:
+      LDAP_ORGANISATION: Apache NiFi
+      LDAP_DOMAIN: nifi.apache.org
+      LDAP_ADMIN_PASSWORD: password
+      LDAP_TLS_CRT_FILENAME: my-ldap.crt
+      LDAP_TLS_KEY_FILENAME: my-ldap.key
+      LDAP_TLS_CA_CRT_FILENAME: the-ca.crt
+
+# volumes:
+#   ldap-database-volume: /Users/apiri/Development/docker-data/ldap/database
+  # ldap-config-volume: /Users/apiri/Development/docker-data/ldap/config
+  # ldap-data-volume: /Users/apiri/Development/docker-data/ldap/data
+  # ldap-cert-volume: /Users/apiri/Development/docker-data/ldap/certs
+
+  # monitor:
+  #   image: portainer/portainer
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - ${HOME}/.portainer/data:/data
+  #   ports:
+  #     - 9000:9000
