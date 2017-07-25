@@ -49,6 +49,8 @@ EXPOSE 8080 8443
 EXPOSE 8181
 
 ADD    ./sh/ /opt/nifi/sh
+RUN    rm $NIFI_HOME/conf/login-identity-providers.xml
+ADD    ./conf/login-identity-providers.xml $NIFI_HOME/conf/login-identity-providers.xml
 
 RUN chown -R nifi:nifi /opt/nifi
 
