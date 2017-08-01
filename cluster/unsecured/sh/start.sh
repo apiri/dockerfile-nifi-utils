@@ -17,7 +17,7 @@ if [ -n "${LDAP_AUTHENTICATION_STRATEGY}" ]; then
   . ${NIFI_BASE_DIR}/sh/update_login_providers.sh
 
   echo "Found that LDAP was set, updating properties for secure mode."
-  sed -i -e 's|<property name="Initial Admin Identity"></property>|<property name="Initial Admin Identity">cn=admin,dc=example,dc=org</property>|'  ${NIFI_HOME}/conf/authorizers.xml
+  sed -i -e 's|<property name="Initial Admin Identity"></property>|<property name="Initial Admin Identity">'"${LDAP_MANAGER_DN}"'</property>|'  ${NIFI_HOME}/conf/authorizers.xml
 
   echo "Requesting certificate with CSR."
   mkdir -p /opt/nifi/certs

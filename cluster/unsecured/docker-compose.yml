@@ -43,10 +43,10 @@ services:
   ldap:
     image: osixia/openldap:1.1.9
     hostname: ldap
-    volumes:
-      - /Users/apiri/Development/docker-data/ldap/database:/var/lib/ldap # LDAP database
-      - /Users/apiri/Development/docker-data/ldap/config:/etc/ldap/slapd.d # LDAP config
-      - /Users/apiri/Development/docker-data/ldap/certs:/container/service/slapd/assets/certs # certificates
+    # volumes:
+    #   - /Users/apiri/Development/docker-data/ldap/database:/var/lib/ldap # LDAP database
+    #   - /Users/apiri/Development/docker-data/ldap/config:/etc/ldap/slapd.d # LDAP config
+    #   - /Users/apiri/Development/docker-data/ldap/certs:/container/service/slapd/assets/certs # certificates
     ports:
       - 6389:389
       - 6636:636
