@@ -1,14 +1,6 @@
 
 version: '3'
 services:
-  # zookeeper:
-  #   image: zookeeper
-  #   restart: always
-  #   ports:
-  #     - 2181
-  #   environment:
-  #     ZOO_MY_ID: 1
-  #     ZOO_SERVERS: server.1=zookeeper:2888:3888
 
   nifi-ca:
     image:  aldrin/apache-nifi-tls-toolkit
@@ -26,7 +18,7 @@ services:
       - 28443:8443
     environment:
       tls_token: ${tls_token}
-      enable_ldap: 'TRUE'
+      ldap_auth_mode: 'basic'
     links:
       - nifi-ca:nifi-ca
   #   depends_on:

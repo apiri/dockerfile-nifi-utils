@@ -1,18 +1,3 @@
-# FROM apachenifi:1.1.1
-#
-# ADD    ./sh/ /opt/nifi/sh
-# ADD    nifi-toolkit-1.1.1-bin.tar.gz /opt/nifi/
-#
-# USER root
-# RUN  apt-get update && \
-#       apt-get install jq && \
-#       chown -R nifi:nifi /opt/nifi
-#
-# USER nifi
-#
-# CMD    ["/opt/nifi/sh/start.sh"]
-
-
 FROM java:8
 MAINTAINER Apache NiFi <dev@nifi.apache.org>
 
@@ -37,10 +22,7 @@ RUN curl -fSL $NIFI_BINARY_URL -o $NIFI_BASE_DIR/nifi-${NIFI_VERSION}-bin.tar.gz
 	&& tar -xvzf $NIFI_BASE_DIR/nifi-${NIFI_VERSION}-bin.tar.gz -C $NIFI_BASE_DIR \
 	&& rm $NIFI_BASE_DIR/nifi-${NIFI_VERSION}-bin.tar.gz \
   && apt-get update \
-  && apt-get install jq
-
-RUN wget https://github.com/outbrain/zookeepercli/releases/download/v1.0.10/zookeepercli_1.0.10_amd64.deb \
-	&& dpkg -i zookeepercli_1.0.10_amd64.deb
+  && apt-get install -y jq xmlstarlet
 
 # Web HTTP Port
 EXPOSE 8080 8443
@@ -49,8 +31,6 @@ EXPOSE 8080 8443
 EXPOSE 8181
 
 ADD    ./sh/ /opt/nifi/sh
-RUN    rm $NIFI_HOME/conf/login-identity-providers.xml
-ADD    ./conf/login-identity-providers.xml $NIFI_HOME/conf/login-identity-providers.xml
 
 RUN chown -R nifi:nifi /opt/nifi
 
