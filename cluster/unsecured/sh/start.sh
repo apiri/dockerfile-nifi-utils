@@ -13,9 +13,9 @@ hostname=$(hostname)
 
 prop_replace 'nifi.remote.input.host' "${hostname}"
 
-if [ -n "${ldap_auth_mode}" ]; then
+if [ -n "${LDAP_AUTHENTICATION_STRATEGY}" ]; then
   . ${NIFI_BASE_DIR}/sh/update_login_providers.sh
-  
+
   echo "Found that LDAP was set, updating properties for secure mode."
   sed -i -e 's|<property name="Initial Admin Identity"></property>|<property name="Initial Admin Identity">cn=admin,dc=example,dc=org</property>|'  ${NIFI_HOME}/conf/authorizers.xml
 
@@ -52,15 +52,7 @@ elif [ -n "${tls_token}" ]; then
   mkdir -p /opt/nifi/certs
   cd /opt/nifi/certs && /opt/nifi/nifi-toolkit-1.3.0/bin/tls-toolkit.sh client -t ${tls_token} -c nifi-ca
 
-
   sed -i -e 's|<property name="Initial Admin Identity"></property>|<property name="Initial Admin Identity">CN=InitialAdmin, OU=NIFI</property>|'  ${NIFI_HOME}/conf/authorizers.xml
-
-  # check if there is already a cluster running, if not, treat this as initial node
-  if ! zookeepercli --servers zookeeper -c ls /nifi/leaders ; then
-    sed -i -e 's|<property name="Node Identity 1"></property>|<property name="Node Identity 1">CN='${hostname}', OU=NIFI</property>|'  ${NIFI_HOME}/conf/authorizers.xml
-    # Move the comment line for our Node Identities down 1
-    sed -i -n '59{h;n;G};p' /opt/nifi/nifi-1.3.0/conf/authorizers.xml
-  fi
 
   echo "My conf directory looks like the following: "
   cat ${NIFI_HOME}/conf/*

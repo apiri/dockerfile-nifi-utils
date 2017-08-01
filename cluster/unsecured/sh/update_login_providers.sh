@@ -16,23 +16,19 @@ edit_property() {
 # Remove comments to enable the ldap-provider
 sed -i.bak -e '66d;96d' "${login_providers_file}"
 
-edit_property 'Authentication Strategy' "SIMPLE"
-edit_property 'Manager DN' 'cn=admin,dc=example,dc=org'
-edit_property 'Manager Password' 'password'
-edit_property 'TLS - Keystore' 'keystore'
-edit_property 'TLS - Keystore Password' 'keystorepassword'
-edit_property 'TLS - Keystore Type' 'keystoretype'
-edit_property 'TLS - Truststore' 'truststore'
-edit_property 'TLS - Truststore Password' 'truststorepassword'
-edit_property 'TLS - Truststore Type' 'truststoretype'
-edit_property 'TLS - Client Auth' 'clientauth'
-edit_property 'TLS - Protocol' 'protocol'
-edit_property 'TLS - Shutdown Gracefully' '10 secs'
-edit_property 'Referral Strategy' 'FOLLOW'
-edit_property 'Connect Timeout' '10 secs'
-edit_property 'Read Timeout' '10 secs'
-edit_property 'Url' 'ldap://ldap:389'
-edit_property 'User Search Base' 'dc=example,dc=org'
-edit_property 'User Search Filter' 'cn={0}'
-edit_property 'Identity Strategy' 'USE_DN'
-edit_property 'Authentication Expiration' '12 days'
+edit_property 'Authentication Strategy'     "${LDAP_AUTHENTICATION_STRATEGY}"
+edit_property 'Manager DN'                  "${LDAP_MANAGER_DN}"
+edit_property 'Manager Password'            "${LDAP_MANAGER_PASSWORD}"
+edit_property 'TLS - Keystore'              "${LDAP_TLS_KEYSTORE}"
+edit_property 'TLS - Keystore Password'     "${LDAP_TLS_KEYSTORE_PASSWORD}"
+edit_property 'TLS - Keystore Type'         "${LDAP_TLS_KEYSTORE_TYPE}"
+edit_property 'TLS - Truststore'            "${LDAP_TLS_TRUSTSTORE}"
+edit_property 'TLS - Truststore Password'   "${LDAP_TLS_TRUSTSTORE_PASSWORD}"
+edit_property 'TLS - Truststore Type'       "${LDAP_TLS_TRUSTSTORE_TYPE}"
+edit_property 'TLS - Client Auth'           'clientauth'
+edit_property 'TLS - Protocol'              'protocol'
+edit_property 'Url'                         "${LDAP_URL}"
+edit_property 'User Search Base'            "${LDAP_USER_SEARCH_BASE}"
+edit_property 'User Search Filter'          "${LDAP_USER_SEARCH_FILTER}"
+edit_property 'Identity Strategy'           "${LDAP_IDENTITY_STRATEGY}"
+edit_property 'Authentication Expiration'   '12 days'
