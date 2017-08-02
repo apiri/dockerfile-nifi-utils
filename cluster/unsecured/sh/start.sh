@@ -19,9 +19,16 @@ if [ -n "${LDAP_AUTHENTICATION_STRATEGY}" ]; then
   echo "Found that LDAP was set, updating properties for secure mode."
   sed -i -e 's|<property name="Initial Admin Identity"></property>|<property name="Initial Admin Identity">'"${LDAP_MANAGER_DN}"'</property>|'  ${NIFI_HOME}/conf/authorizers.xml
 
-  echo "Requesting certificate with CSR."
-  mkdir -p /opt/nifi/certs
-  cd /opt/nifi/certs && /opt/nifi/nifi-toolkit-1.3.0/bin/tls-toolkit.sh client -t ${tls_token} -c nifi-ca
+  if [ "${GENERATE_CERTIFICATES}" == "true" ]; then
+    if [ -z "{tls_token}" ]; then
+      echo "Cannot request certificates without environment variable tls_token."
+      exit 1;
+    fi
+    
+    echo "Requesting certificate with CSR."
+    mkdir -p /opt/nifi/certs
+    cd /opt/nifi/certs && /opt/nifi/nifi-toolkit-1.3.0/bin/tls-toolkit.sh client -t ${tls_token} -c nifi-ca
+  fi
 
   # Disable HTTP and enable HTTPS
   prop_replace 'nifi.web.http.host' ""
@@ -30,20 +37,28 @@ if [ -n "${LDAP_AUTHENTICATION_STRATEGY}" ]; then
   prop_replace 'nifi.web.https.host' "${hostname}"
   prop_replace 'nifi.web.https.port' '8443'
   prop_replace 'nifi.remote.input.secure' 'true'
-  prop_replace 'nifi.security.needClientAuth' 'WANT'
+  prop_replace 'nifi.security.needClientAuth' 'false'
   prop_replace 'nifi.security.user.login.identity.provider' 'ldap-provider'
 
   # Setup keystore
-  prop_replace 'nifi.security.keystore' '/opt/nifi/certs/keystore.jks'
-  prop_replace 'nifi.security.keystoreType' 'JKS'
-  prop_replace 'nifi.security.keystorePasswd' "$(cat /opt/nifi/certs/config.json | jq -r .keyStorePassword)"
-  prop_replace 'nifi.security.keyPasswd' "$(cat /opt/nifi/certs/config.json | jq -r .keyPassword)"
+  prop_replace 'nifi.security.keystore' "${NIFI_KEYSTORE}"
+  prop_replace 'nifi.security.keystoreType' "${NIFI_KEYSTORE_TYPE}"
+  if [ -z "${NIFI_KEYSTORE_PASSWORD}" ]; then
+    echo "Keystore password was not provided, defaulting to generated location."
+    NIFI_KEYSTORE_PASSWORD=$(cat /opt/nifi/certs/config.json | jq -r .keyStorePassword)
+  fi
+  prop_replace 'nifi.security.keystorePasswd' "${NIFI_KEYSTORE_PASSWORD}"
+  prop_replace 'nifi.security.keyPasswd' "${NIFI_KEYSTORE_PASSWORD}"
 
 
   # Setup truststore
-  prop_replace 'nifi.security.truststore' '/opt/nifi/certs/truststore.jks'
-  prop_replace 'nifi.security.truststoreType' 'JKS'
-  prop_replace 'nifi.security.truststorePasswd' "$(cat /opt/nifi/certs/config.json | jq -r .trustStorePassword)"
+  prop_replace 'nifi.security.truststore' "${NIFI_TRUSTSTORE}"
+  prop_replace 'nifi.security.truststoreType' "${NIFI_TRUSTSTORE_TYPE}"
+  if [ -z "${NIFI_TRUSTSTORE_PASSWORD}" ]; then
+    echo "Truststore password was not provided, defaulting to generated location."
+    NIFI_TRUSTSTORE_PASSWORD=$(cat /opt/nifi/certs/config.json | jq -r .trustStorePassword)
+  fi
+  prop_replace 'nifi.security.truststorePasswd' "${NIFI_TRUSTSTORE_PASSWORD}"
 
 elif [ -n "${tls_token}" ]; then
   echo "Found that tls was set, updating properties for secure mode."

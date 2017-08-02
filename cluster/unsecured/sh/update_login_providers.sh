@@ -3,11 +3,14 @@
 login_providers_file=${NIFI_HOME}/conf/login-identity-providers.xml
 property_xpath='//loginIdentityProviders/provider/property'
 
+# Update a given property in the login-identity-providers file if a value is specified
 edit_property() {
   property_name=$1
   property_value=$2
 
-  xmlstarlet ed --inplace -u "${property_xpath}[@name='${property_name}']" -v "${property_value}" "${login_providers_file}"
+  if [ -n "${property_value}" ]; then
+    xmlstarlet ed --inplace -u "${property_xpath}[@name='${property_name}']" -v "${property_value}" "${login_providers_file}"
+  fi
 }
 
 # Remove comments to enable the ldap-provider
