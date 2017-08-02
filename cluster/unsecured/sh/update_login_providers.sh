@@ -1,7 +1,5 @@
 #!/bin/sh -ex
 
-echo '!!! Updating login providers file...'
-
 login_providers_file=${NIFI_HOME}/conf/login-identity-providers.xml
 property_xpath='//loginIdentityProviders/provider/property'
 
@@ -11,7 +9,6 @@ edit_property() {
 
   xmlstarlet ed --inplace -u "${property_xpath}[@name='${property_name}']" -v "${property_value}" "${login_providers_file}"
 }
-
 
 # Remove comments to enable the ldap-provider
 sed -i.bak -e '66d;96d' "${login_providers_file}"
@@ -25,10 +22,8 @@ edit_property 'TLS - Keystore Type'         "${LDAP_TLS_KEYSTORE_TYPE}"
 edit_property 'TLS - Truststore'            "${LDAP_TLS_TRUSTSTORE}"
 edit_property 'TLS - Truststore Password'   "${LDAP_TLS_TRUSTSTORE_PASSWORD}"
 edit_property 'TLS - Truststore Type'       "${LDAP_TLS_TRUSTSTORE_TYPE}"
-edit_property 'TLS - Client Auth'           'clientauth'
-edit_property 'TLS - Protocol'              'protocol'
+edit_property 'TLS - Protocol'              "${LDAP_TLS_PROTOCOL}"
 edit_property 'Url'                         "${LDAP_URL}"
 edit_property 'User Search Base'            "${LDAP_USER_SEARCH_BASE}"
 edit_property 'User Search Filter'          "${LDAP_USER_SEARCH_FILTER}"
 edit_property 'Identity Strategy'           "${LDAP_IDENTITY_STRATEGY}"
-edit_property 'Authentication Expiration'   '12 days'

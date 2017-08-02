@@ -1,0 +1,9 @@
+version: '3'
+services:
+
+  nifi-ca:
+    image:  aldrin/apache-nifi-tls-toolkit
+    hostname: nifi-ca
+    ports:
+      - "8443:8443"
+    command: "server -t ${tls_token} -D CN=nifi-ca,OU=Docker NiFi"

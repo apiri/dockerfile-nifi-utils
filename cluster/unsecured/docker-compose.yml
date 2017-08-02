@@ -2,12 +2,12 @@
 version: '3'
 services:
 
-  nifi-ca:
-    image:  aldrin/apache-nifi-tls-toolkit
-    hostname: nifi-ca
-    ports:
-      - "18443:8443"
-    command: "server -t ${tls_token} -D CN=nifi-ca,OU=Docker NiFi"
+  # nifi-ca:
+  #   image:  aldrin/apache-nifi-tls-toolkit
+  #   hostname: nifi-ca
+  #   ports:
+  #     - "18443:8443"
+  #   command: "server -t ${tls_token} -D CN=nifi-ca,OU=Docker NiFi"
 
   nifi-node:
     build: ./
@@ -18,7 +18,9 @@ services:
       - 28443:8443
     environment:
       tls_token: ${tls_token}
-      LDAP_AUTHENTICATION_STRATEGY: 'SIMPLE'
+      # http://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#ldap_login_identity_provider
+      # One of ANONYMOUS, SIMPLE, LDAPS, START_TLS
+      LDAP_AUTHENTICATION_STRATEGY: 'START_TLS'
       LDAP_MANAGER_DN: 'cn=admin,dc=example,dc=org'
       LDAP_MANAGER_PASSWORD: 'password'
 
@@ -28,31 +30,33 @@ services:
 
       LDAP_URL: 'ldap://ldap:389'
 
-      # Optional properties only needed for secure STARTTLS or LDAPS
+      # Optional properties only needed for secure START_TLS or LDAPS
       LDAP_TLS_KEYSTORE: ''
       LDAP_TLS_KEYSTORE_PASSWORD: ''
       LDAP_TLS_KEYSTORE_TYPE: ''
       LDAP_TLS_TRUSTSTORE: ''
       LDAP_TLS_TRUSTSTORE_PASSWORD: ''
       LDAP_TLS_TRUSTSTORE_TYPE: ''
-    links:
-      - nifi-ca:nifi-ca
+    # links:
+    #   - nifi-ca:nifi-ca
   #   depends_on:
   #     - zookeeper
 
   ldap:
     image: osixia/openldap:1.1.9
     hostname: ldap
-    # volumes:
-    #   - /Users/apiri/Development/docker-data/ldap/database:/var/lib/ldap # LDAP database
-    #   - /Users/apiri/Development/docker-data/ldap/config:/etc/ldap/slapd.d # LDAP config
-    #   - /Users/apiri/Development/docker-data/ldap/certs:/container/service/slapd/assets/certs # certificates
+    volumes:
+      - /Users/apiri/Development/docker-data/ldap/certs:/container/service/slapd/assets/certs
     ports:
       - 6389:389
       - 6636:636
     environment:
       # Default admin - cn=admin,dc=example,dc=org
-      LDAP_ADMIN_PASSWORD: password
+      LDAP_ADMIN_PASSWORD: 'password'
+      LDAP_TLS_ENFORCE: 'true'
+      LDAP_TLS_VERIFY_CLIENT: 'never'
+      LDAP_TLS_PROTOCOL_MIN: '1.2'
+      LDAP_TLS_CIPHER_SUITE: 'SECURE128:-VERS-SSL3.0:+VERS-TLS1.2'
       # LDAP_ORGANISATION: Apache NiFi
       # LDAP_DOMAIN: ldap.nifi.apache.org
       # LDAP_TLS_CRT_FILENAME: my-ldap.crt
@@ -72,11 +76,3 @@ services:
   # ldap-config-volume: /Users/apiri/Development/docker-data/ldap/config
   # ldap-data-volume: /Users/apiri/Development/docker-data/ldap/data
   # ldap-cert-volume: /Users/apiri/Development/docker-data/ldap/certs
-
-  # monitor:
-  #   image: portainer/portainer
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - ${HOME}/.portainer/data:/data
-  #   ports:
-  #     - 9000:9000
