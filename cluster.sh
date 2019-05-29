@@ -13,11 +13,11 @@ operation=$1
 case $operation in
   up)
     echo Starting cluster
-    docker-compose -f ${compose_path}/cluster/unsecured/docker-compose.yml up --build -d
+    docker-compose -f ${compose_path}/cluster/docker-compose.yml up --build -d
     ;;
   down)
     echo Tearing down cluster
-    docker-compose -f ${compose_path}/cluster/unsecured/docker-compose.yml down
+    docker-compose -f ${compose_path}/cluster/docker-compose.yml down
     ;;
   scale)
     num_nodes=$2
@@ -26,6 +26,6 @@ case $operation in
       exit 1
     fi
     echo Scaling cluster to ${num_nodes} nodes.
-    docker-compose -f ${compose_path}/cluster/unsecured/docker-compose.yml scale nifi-node=${num_nodes}
+    docker-compose -f ${compose_path}/cluster/docker-compose.yml scale nifi-node=${num_nodes}
     ;;
 esac
